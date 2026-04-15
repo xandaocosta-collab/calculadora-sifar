@@ -1,6 +1,8 @@
 /**
  * Motor matemático para cálculo de passivo trabalhista (LC 173) - Araucária/PR
- * Sem manipulação de DOM/UI, apenas regras puras e projeções financeiras.
+ * v2.0 — Correções auditadas em 15/04/2025:
+ * [FIX-A] Efeito Cascata: percentuais agora compostos por multiplicação, não soma simples.
+ * [FIX-B] Proporcionalidade: eliminadas frações de mês; progressão entra no 1º dia do mês seguinte.
  */
 
 class CalculadoraPassivo {
@@ -34,6 +36,9 @@ class CalculadoraPassivo {
         this.DIAS_CONGELADOS = 583;
     }
 
+    // ─────────────────────────────────────────────────────────────────
+    // Base salarial corrigida pelos reajustes municipais
+    // ─────────────────────────────────────────────────────────────────
     obterBaseAtualizada(ano, mes) {
         let valor = this.vencimentoBaseMaio2020;
 
@@ -46,9 +51,11 @@ class CalculadoraPassivo {
         return valor;
     }
 
+    // ─────────────────────────────────────────────────────────────────
+    // Data real de aquisição de um nível, considerando o congelamento
+    // ─────────────────────────────────────────────────────────────────
     getDataAquisicao(anosRequisito, isIdeal) {
         let dataAquisicao = new Date(this.dataAdmissao);
-
         dataAquisicao.setFullYear(dataAquisicao.getFullYear() + anosRequisito);
 
         if (isIdeal || dataAquisicao < this.INICIO_CONGELAMENTO) {
@@ -72,36 +79,48 @@ class CalculadoraPassivo {
         return dataAquisicao;
     }
 
+    // ─────────────────────────────────────────────────────────────────
+    // [FIX-A] Percentual composto no dia-alvo
+    // ─────────────────────────────────────────────────────────────────
     getPercentualAtivoNoDia(targetDate, isIdeal) {
-        let percentual = 0;
+        let fator = 1.0;
 
+        // Triênios: +10% composto a cada 3 anos (máx. 15 triênios)
         for (let i = 1; i <= 15; i++) {
             let acq = this.getDataAquisicao(i * 3, isIdeal);
-            if (targetDate >= acq) percentual += 0.10;
-            else break;
+            if (targetDate >= acq) {
+                fator *= 1.10;
+            } else {
+                break;
+            }
         }
 
+        // Quinquênios: +5% composto a cada 5 anos (máx. 9 quinquênios)
         for (let i = 1; i <= 9; i++) {
             let acq = this.getDataAquisicao(i * 5, isIdeal);
-            if (targetDate >= acq) percentual += 0.05;
-            else break;
+            if (targetDate >= acq) {
+                fator *= 1.05;
+            } else {
+                break;
+            }
         }
 
-        return percentual;
+        // Retorna somente o adicional (sem incluir a base 1.0)
+        return fator - 1.0;
     }
 
+    // ─────────────────────────────────────────────────────────────────
+    // [FIX-B] Percentual do mês sem frações diárias
+    // ─────────────────────────────────────────────────────────────────
     getPercentualMedioMes(ano, mes, isIdeal) {
-        let diasNoMes = new Date(ano, mes, 0).getDate();
-        let somaPerc = 0;
-
-        for (let dia = 1; dia <= diasNoMes; dia++) {
-            let dataAlvo = new Date(ano, mes - 1, dia, 12, 0, 0);
-            somaPerc += this.getPercentualAtivoNoDia(dataAlvo, isIdeal);
-        }
-
-        return somaPerc / diasNoMes;
+        // Meio-dia do 1º dia do mês para evitar ambiguidades de meia-noite
+        let primeiroDiaMes = new Date(ano, mes - 1, 1, 12, 0, 0);
+        return this.getPercentualAtivoNoDia(primeiroDiaMes, isIdeal);
     }
 
+    // ─────────────────────────────────────────────────────────────────
+    // Relatório mensal completo
+    // ─────────────────────────────────────────────────────────────────
     processarRelatorio() {
         let anoControle = 2022;
         let mesControle = 1;
@@ -132,14 +151,13 @@ class CalculadoraPassivo {
 
             let diferencaMes = vencimentoIdeal - vencimentoReal;
 
-            // O Município só é devedor se a diferença for maior de 0
+            // O Município só é devedor se a diferença for positiva
             let valorDevidoPassivo = Math.max(0, diferencaMes);
 
             // Reflexo de Férias (1/3) mapeado pelo histórico da matriz de anos
             let valorAcrescimoFerias = 0;
             let mesGozoDoAno = this.historicoFerias[anoControle];
 
-            // Se o servidor definiu férias para o ano em que o loop está iterando E parou exatamente no mês configurado
             if (mesGozoDoAno && mesGozoDoAno === mesControle && valorDevidoPassivo > 0) {
                 valorAcrescimoFerias = valorDevidoPassivo / 3;
             }
@@ -152,7 +170,7 @@ class CalculadoraPassivo {
 
             let totalPagoAqui = valorDevidoPassivo + valorAcrescimoFerias + valorAcrescimo13;
 
-            // Inserção incondicional no extrato (meses zerados aparecerão)
+            // Montagem do descritor de competência
             let msgsAdicionais = [];
             if (valorAcrescimoFerias > 0) msgsAdicionais.push('+ 1/3 Férias');
             if (valorAcrescimo13 > 0) msgsAdicionais.push('+ 13º');
