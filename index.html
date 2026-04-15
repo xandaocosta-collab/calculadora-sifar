@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Oficial de Passivos LC 173 | SIFAR</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            400: '#facc15', /* yellow-400 */
+                            500: '#eab308', /* yellow-500 (SIFAR) */
+                            600: '#ca8a04', /* yellow-600 */
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* bg-slate-50 */
+            color: #1e293b; /* text-slate-800 */
+            min-height: 100vh;
+        }
+
+        .panel-box {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+        }
+
+        .input-base {
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
+            color: #0f172a;
+            transition: all 0.2s ease;
+        }
+        
+        .input-base:focus {
+            outline: none;
+            border-color: #eab308;
+            box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.15);
+            background-color: #ffffff;
+        }
+
+        /* Customize Scrollbar Webkit */
+        .scrollable-table-container::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .scrollable-table-container::-webkit-scrollbar-track {
+            background: #f1f5f9; 
+            border-radius: 4px;
+        }
+        .scrollable-table-container::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        .scrollable-table-container::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+
+        .btn-animate {
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+        .btn-animate:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body class="py-8 px-4 md:px-8">
+
+    <!-- Navbar/Header Brand (Opcional visual) -->
+    <div class="max-w-7xl mx-auto mb-8 flex items-center gap-5">
+        <img src="logo-sifar.png" alt="Sindicato SIFAR" class="h-16 w-auto object-contain drop-shadow-sm transition-transform duration-300 hover:scale-105">
+        <div class="border-l-2 border-slate-200 pl-4 py-1">
+            <h1 class="text-lg font-bold text-slate-800 leading-tight">Calculadora Oficial</h1>
+            <p class="text-sm font-medium text-slate-500">Defasagem Salarial (LC 173)</p>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto flex flex-col xl:flex-row gap-8 items-start">
+        
+        <!-- Painel Central Formulário -->
+        <div class="panel-box rounded-2xl w-full xl:w-[480px] flex-shrink-0 flex flex-col overflow-hidden">
+            
+            <div class="bg-slate-50 p-6 border-b border-slate-200">
+                <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="ph-fill ph-file-text text-brand-500 text-xl"></i>
+                    Dados do Servidor
+                </h2>
+                <p class="text-slate-500 text-sm mt-1">Preencha com exatidão usando seu contracheque.</p>
+            </div>
+
+            <form id="calcForm" class="flex flex-col gap-6 p-6">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Data de Admissão</label>
+                        <input type="date" id="dataAdmissao" required
+                               class="w-full input-base rounded-md px-3 py-2 text-sm focus:ring-brand-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Base (Maio/2020)</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 font-medium">R$</span>
+                            <input type="text" id="vencimentoBase" required placeholder="0,00"
+                                   class="w-full input-base rounded-md pl-9 pr-3 py-2 text-sm focus:ring-brand-500">
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Área de Atuação</label>
+                    <div class="flex gap-4 p-3 bg-slate-50 border border-slate-200 rounded-md">
+                        <label class="flex items-center gap-2 cursor-pointer group">
+                            <input type="radio" name="categoria" value="Demais" checked class="text-brand-500 focus:ring-brand-500 w-4 h-4 border-slate-300">
+                            <span class="text-sm text-slate-700 font-medium group-hover:text-black transition-colors">Demais Áreas</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer group">
+                            <input type="radio" name="categoria" value="Saúde/Segurança" class="text-brand-500 focus:ring-brand-500 w-4 h-4 border-slate-300">
+                            <span class="text-sm text-slate-700 font-medium group-hover:text-black transition-colors">Saúde/Segurança</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Nova Seção de Férias Matricial -->
+                <div class="border-t border-slate-200 pt-5">
+                    <label class="block text-sm font-bold text-slate-800 mb-1 flex items-center gap-2">
+                        <i class="ph-fill ph-calendar-blank text-brand-500 text-lg"></i>
+                        Mês de Gozo das Férias (1/3)
+                    </label>
+                    <p class="text-[13px] italic text-slate-500 mb-4 bg-yellow-50 p-3 rounded-md border border-yellow-100 flex items-start gap-2">
+                        <i class="ph-fill ph-info text-brand-500 mt-0.5"></i>
+                        <span>Dica: Acesse o <strong>Portal do Cidadão > Emissão do Relatório Gerencial de Férias</strong> para consultar as datas exatas em que usufruiu suas folgas.</span>
+                    </p>
+                    
+                    <div class="grid grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-3">
+                        <!-- Gerado estáticamente para maior clareza visual exigida -->
+                        <div class="flex flex-col">
+                            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1 indent-1">Ano 2022</span>
+                            <select id="ferias_2022" class="w-full input-base rounded-md px-2 py-2 text-[13px] font-medium">
+                                <option value="">Não usufruí</option>
+                                <option value="1">Janeiro</option><option value="2">Fevereiro</option>
+                                <option value="3">Março</option><option value="4">Abril</option>
+                                <option value="5">Maio</option><option value="6">Junho</option>
+                                <option value="7">Julho</option><option value="8">Agosto</option>
+                                <option value="9">Setembro</option><option value="10">Outubro</option>
+                                <option value="11">Novembro</option><option value="12">Dezembro</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1 indent-1">Ano 2023</span>
+                            <select id="ferias_2023" class="w-full input-base rounded-md px-2 py-2 text-[13px] font-medium">
+                                <option value="">Não usufruí</option>
+                                <option value="1">Janeiro</option><option value="2">Fevereiro</option>
+                                <option value="3">Março</option><option value="4">Abril</option>
+                                <option value="5">Maio</option><option value="6">Junho</option>
+                                <option value="7">Julho</option><option value="8">Agosto</option>
+                                <option value="9">Setembro</option><option value="10">Outubro</option>
+                                <option value="11">Novembro</option><option value="12">Dezembro</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1 indent-1">Ano 2024</span>
+                            <select id="ferias_2024" class="w-full input-base rounded-md px-2 py-2 text-[13px] font-medium">
+                                <option value="">Não usufruí</option>
+                                <option value="1">Janeiro</option><option value="2">Fevereiro</option>
+                                <option value="3">Março</option><option value="4">Abril</option>
+                                <option value="5">Maio</option><option value="6">Junho</option>
+                                <option value="7">Julho</option><option value="8">Agosto</option>
+                                <option value="9">Setembro</option><option value="10">Outubro</option>
+                                <option value="11">Novembro</option><option value="12">Dezembro</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1 indent-1">Ano 2025</span>
+                            <select id="ferias_2025" class="w-full input-base rounded-md px-2 py-2 text-[13px] font-medium">
+                                <option value="">Não usufruí</option>
+                                <option value="1">Janeiro</option><option value="2">Fevereiro</option>
+                                <option value="3">Março</option><option value="4">Abril</option>
+                                <option value="5">Maio</option><option value="6">Junho</option>
+                                <option value="7">Julho</option><option value="8">Agosto</option>
+                                <option value="9">Setembro</option><option value="10">Outubro</option>
+                                <option value="11">Novembro</option><option value="12">Dezembro</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1 indent-1">Ano 2026</span>
+                            <select id="ferias_2026" class="w-full input-base rounded-md px-2 py-2 text-[13px] font-medium">
+                                <option value="">Não usufruí</option>
+                                <option value="1">Janeiro</option><option value="2">Fevereiro</option>
+                                <option value="3">Março</option><option value="4">Abril</option>
+                                <option value="5">Maio</option><option value="6">Junho</option>
+                                <option value="7">Julho</option><option value="8">Agosto</option>
+                                <option value="9">Setembro</option><option value="10">Outubro</option>
+                                <option value="11">Novembro</option><option value="12">Dezembro</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3 mt-1 bg-slate-50 p-4 rounded-md border border-slate-200">
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="checkbox" id="suspensao" class="rounded text-brand-500 focus:ring-brand-500 border-slate-300 w-4 h-4">
+                        <span class="text-sm font-medium text-slate-600 group-hover:text-slate-900 transition-colors">Teve Suspensão Disciplinar no período?</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="checkbox" id="licenca" class="rounded text-brand-500 focus:ring-brand-500 border-slate-300 w-4 h-4">
+                        <span class="text-sm font-medium text-slate-600 group-hover:text-slate-900 transition-colors">Tirou Licença sem Vencimento?</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="w-full mt-2 bg-brand-500 hover:bg-brand-600 active:bg-brand-600 text-white font-bold py-3 px-6 rounded-md btn-animate flex items-center justify-center gap-2 shadow-sm text-base uppercase tracking-wide">
+                    <i class="ph-bold ph-calculator text-xl"></i>
+                    Processar Cálculo de Reparação
+                </button>
+            </form>
+        </div>
+
+        <!-- Painel de Resultados -->
+        <div id="resultContainer" class="w-full flex-grow flex flex-col gap-6 hidden opacity-0 transition-opacity duration-500">
+            
+            <!-- Headline Total Oficial -->
+            <div class="panel-box rounded-2xl flex border-l-4 border-l-brand-500 overflow-hidden">
+                <div class="p-6 md:p-8 flex-grow flex flex-col bg-white justify-center">
+                    <h2 class="text-slate-500 text-sm font-bold uppercase tracking-wider mb-2">Montante Total Oficial</h2>
+                    <div class="text-4xl md:text-5xl font-extrabold text-slate-800" id="txtTotal">
+                        R$ 0,00
+                    </div>
+                </div>
+                
+                <div class="bg-slate-50 border-l border-slate-200 p-6 md:p-8 flex flex-col items-center justify-center min-w-[140px]">
+                    <i class="ph-fill ph-calendar-check text-slate-300 text-3xl mb-1"></i>
+                    <span class="text-brand-600 font-extrabold text-3xl" id="txtMeses">0</span>
+                    <span class="text-slate-500 text-xs font-bold uppercase tracking-wider mt-1 text-center">Meses<br>Contabilizados</span>
+                </div>
+            </div>
+
+            <!-- Alertas e Avisos -->
+            <div id="alertasContainer" class="hidden flex-col gap-2"></div>
+
+            <!-- Tabela Rolável Institucional -->
+            <div class="panel-box rounded-2xl overflow-hidden flex flex-col flex-grow max-h-[600px] bg-white">
+                <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                    <h3 class="font-bold text-slate-700 flex items-center gap-2">
+                        <i class="ph-bold ph-table text-brand-500 text-xl"></i>
+                        Extrato Detalhado Mensal
+                    </h3>
+                </div>
+                
+                <div class="scrollable-table-container overflow-y-auto w-full">
+                    <table class="w-full text-sm text-left whitespace-nowrap">
+                        <thead class="text-xs uppercase bg-white text-slate-500 sticky top-0 z-10 shadow-[0_1px_0_0_#e2e8f0]">
+                            <tr>
+                                <th class="px-5 py-4 font-bold border-b border-slate-200">Competência</th>
+                                <th class="px-5 py-4 font-bold border-b border-slate-200">Base Corrigida</th>
+                                <th class="px-5 py-4 font-extrabold text-emerald-600 border-b border-slate-200">Direito SIFAR</th>
+                                <th class="px-5 py-4 font-bold text-rose-500 border-b border-slate-200">Direito LC 173</th>
+                                <th class="px-5 py-4 font-bold border-b border-slate-200">Devido</th>
+                                <th class="px-5 py-4 font-bold border-b border-slate-200">Pago</th>
+                                <th class="px-5 py-4 font-extrabold text-slate-800 border-b border-slate-200 bg-amber-50/50">Diferença LÍQUIDA</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="divide-y divide-slate-100">
+                            <!-- JS Inserts Rows Here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Script de Integração -->
+    <!-- Carrega a regra de negócio crua no escopo global (window.CalculadoraPassivo) -->
+    <script src="calculadora.js"></script>
+    
+    <script>
+        // Máscara de moeda BRL para o Vencimento Base
+        const inputVencimento = document.getElementById('vencimentoBase');
+        inputVencimento.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, ''); // Limpa texto
+            if (value === "") {
+                e.target.value = "";
+                return;
+            }
+            value = (parseInt(value, 10) / 100).toFixed(2) + '';
+            value = value.replace(".", ","); // Fixa vírgula decimal
+            value = value.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1."); // Aplica pontos
+            e.target.value = value;
+        });
+
+        document.getElementById('calcForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Resgata os inputs das Férias
+            let paramFerias = {};
+            [2022, 2023, 2024, 2025, 2026].forEach(ano => {
+                const val = document.getElementById(`ferias_${ano}`).value;
+                if(val) {
+                    paramFerias[ano] = parseInt(val, 10);
+                }
+            });
+
+            // Resgata os parâmetros primários
+            const params = {
+                dataAdmissao: document.getElementById('dataAdmissao').value,
+                vencimentoBaseMaio2020: parseFloat(document.getElementById('vencimentoBase').value.replace(/\./g, '').replace(',', '.')),
+                categoria: document.querySelector('input[name="categoria"]:checked').value,
+                historicoFerias: paramFerias,
+                teveSuspensaoDisciplinar: document.getElementById('suspensao').checked,
+                teveLicencaSemVencimento: document.getElementById('licenca').checked,
+                fezHorasExtras: false
+            };
+
+            // Avalia as regras pela engine pura
+            const calculadora = new CalculadoraPassivo(params);
+            const resultado = calculadora.processarRelatorio();
+
+            renderizarResultados(resultado);
+        });
+
+        function formatBRL(valor) {
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
+        }
+
+        function renderizarResultados(resultado) {
+            const container = document.getElementById('resultContainer');
+            
+            // Textos Resumo
+            document.getElementById('txtTotal').textContent = formatBRL(resultado.totalAcumuladoEstimado);
+            document.getElementById('txtMeses').textContent = resultado.quantiaDeMesesAtingidos;
+
+            // Alertas
+            const alertasBox = document.getElementById('alertasContainer');
+            alertasBox.innerHTML = '';
+            if (resultado.avisos.length > 0) {
+                alertasBox.classList.remove('hidden');
+                alertasBox.classList.add('flex');
+                resultado.avisos.forEach(aviso => {
+                    const alertEl = document.createElement('div');
+                    alertEl.className = "bg-rose-50 border border-rose-200 text-rose-700 p-4 rounded-lg flex items-start gap-3 text-sm shadow-sm";
+                    alertEl.innerHTML = `<i class="ph-fill ph-warning-circle text-rose-500 text-xl flex-shrink-0"></i> <span class="font-medium mt-[1px] leading-relaxed">${aviso}</span>`;
+                    alertasBox.appendChild(alertEl);
+                });
+            } else {
+                alertasBox.classList.add('hidden');
+            }
+
+            // Tabela
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            resultado.extrato.forEach(linha => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors";
+                
+                // Destaque visual se houver reflexos específicos (13º ou Férias)
+                const isEspecial = linha.competencia.includes('(');
+                const colorClass = isEspecial ? "text-brand-600 font-bold" : "text-slate-700 font-medium";
+
+                tr.innerHTML = `
+                    <td class="px-5 py-3 ${colorClass}">${linha.competencia}</td>
+                    <td class="px-5 py-3 text-slate-500 font-medium">${formatBRL(linha.baseDaEpoca)}</td>
+                    <td class="px-5 py-3 text-emerald-600 font-extrabold bg-emerald-50/30">${linha.percentualAdqIdeal}</td>
+                    <td class="px-5 py-3 text-rose-500 font-bold bg-rose-50/30">${linha.percentualAdqReal}</td>
+                    <td class="px-5 py-3 text-slate-600">${formatBRL(linha.deviaTerRecebido)}</td>
+                    <td class="px-5 py-3 text-slate-600">${formatBRL(linha.recebeuDeFato)}</td>
+                    <td class="px-5 py-3 text-slate-800 font-extrabold bg-amber-50">${formatBRL(linha.diferencaCreditada)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Apresentar container
+            container.classList.remove('hidden');
+            // Timeout para triggerar a animação de opacidade do Tailwind
+            setTimeout(() => container.classList.remove('opacity-0'), 50);
+            
+            // Scroll suave pra tabela em mobile
+            if(window.innerWidth < 1280) {
+                container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    </script>
+</body>
+</html>
