@@ -160,7 +160,8 @@ class CalculadoraPassivo {
 
         while (anoControle < anoFim || (anoControle === anoFim && mesControle <= mesFim)) {
 
-            let salarioBaseAqueleMes = this.obterBaseAtualizada(anoControle, mesControle);
+            // Correção de Homologação: usar a base estritamente pura para evitar juros sobre juros
+            let salarioBaseAqueleMes = this.vencimentoBaseMaio2020;
 
             let fatorIdeal = this.getPercentualMedioMes(anoControle, mesControle, true);
             let fatorReal = this.getPercentualMedioMes(anoControle, mesControle, false);
