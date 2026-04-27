@@ -131,6 +131,9 @@ class CalculadoraPassivo {
         if (this.categoria === 'Demais') {
             anoFim = 2025;
             mesFim = 12;
+        } else if (this.categoria === 'Saúde/Segurança') {
+            anoFim = 2022;
+            mesFim = 3;
         } else {
             anoFim = targetAtual.getFullYear();
             mesFim = targetAtual.getMonth() + 1;
