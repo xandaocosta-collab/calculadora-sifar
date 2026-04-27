@@ -122,24 +122,32 @@ class CalculadoraPassivo {
     // Relatório mensal completo
     // ─────────────────────────────────────────────────────────────────
     processarRelatorio() {
-        let anoControle = 2022;
-        let mesControle = 1;
+        // 1. Início Obrigatório do Laço
+        let anoControle = 2020;
+        let mesControle = 5;
 
+        // 2. Lógica do Triénio
         let dataTrienio = new Date(this.dataAdmissao);
         dataTrienio.setFullYear(dataTrienio.getFullYear() + 3);
+        let anoTrienio = dataTrienio.getFullYear();
+        let mesTrienio = dataTrienio.getMonth() + 1;
 
-        if (dataTrienio > new Date('2020-05-31T23:59:59') && dataTrienio < new Date('2022-01-01T00:00:00')) {
-            anoControle = dataTrienio.getFullYear();
-            mesControle = dataTrienio.getMonth() + 1;
+        let limiteInferiorTrienio = new Date(2020, 4, 1); // Maio de 2020
+        let limiteSuperiorTrienio = new Date(2021, 11, 31, 23, 59, 59); // Dezembro de 2021
+
+        let anoExibicao = 2022;
+        let mesExibicao = 1;
+
+        if (dataTrienio >= limiteInferiorTrienio && dataTrienio <= limiteSuperiorTrienio) {
+            anoExibicao = anoTrienio;
+            mesExibicao = mesTrienio;
         }
 
         let targetAtual = new Date();
         let anoFim, mesFim;
 
-        if (this.categoria === 'Demais') {
-            anoFim = 2025;
-            mesFim = 12;
-        } else if (this.categoria === 'Saúde/Segurança') {
+        // 4. Trava da Saúde/Segurança
+        if (this.categoria === 'Saúde/Segurança') {
             anoFim = 2022;
             mesFim = 3;
         } else {
@@ -190,17 +198,21 @@ class CalculadoraPassivo {
                 ? `${String(mesControle).padStart(2, '0')}/${anoControle} (${msgsAdicionais.join(', ')})`
                 : `${String(mesControle).padStart(2, '0')}/${anoControle}`;
 
-            extratoMensal.push({
-                competencia: compDesc,
-                baseDaEpoca: Number(salarioBaseAqueleMes.toFixed(2)),
-                percentualAdqIdeal: `${(fatorIdeal * 100).toFixed(2)} %`,
-                percentualAdqReal: `${(fatorReal * 100).toFixed(2)} %`,
-                deviaTerRecebido: Number(vencimentoIdeal.toFixed(2)),
-                recebeuDeFato: Number(vencimentoReal.toFixed(2)),
-                diferencaCreditada: Number(totalPagoAqui.toFixed(2))
-            });
+            // 3. Registo Visual no Extrato
+            let deveExibir = (anoControle > anoExibicao) || (anoControle === anoExibicao && mesControle >= mesExibicao);
 
-            totalAcumuladoGeral += totalPagoAqui;
+            if (deveExibir) {
+                extratoMensal.push({
+                    competencia: compDesc,
+                    baseDaEpoca: Number(salarioBaseAqueleMes.toFixed(2)),
+                    percentualAdqIdeal: `${(fatorIdeal * 100).toFixed(2)} %`,
+                    percentualAdqReal: `${(fatorReal * 100).toFixed(2)} %`,
+                    deviaTerRecebido: Number(vencimentoIdeal.toFixed(2)),
+                    recebeuDeFato: Number(vencimentoReal.toFixed(2)),
+                    diferencaCreditada: Number(totalPagoAqui.toFixed(2))
+                });
+                totalAcumuladoGeral += totalPagoAqui;
+            }
 
             mesControle++;
             if (mesControle > 12) {
