@@ -125,6 +125,14 @@ class CalculadoraPassivo {
         let anoControle = 2022;
         let mesControle = 1;
 
+        let dataTrienio = new Date(this.dataAdmissao);
+        dataTrienio.setFullYear(dataTrienio.getFullYear() + 3);
+
+        if (dataTrienio > new Date('2020-05-31T23:59:59') && dataTrienio < new Date('2022-01-01T00:00:00')) {
+            anoControle = dataTrienio.getFullYear();
+            mesControle = dataTrienio.getMonth() + 1;
+        }
+
         let targetAtual = new Date();
         let anoFim, mesFim;
 
