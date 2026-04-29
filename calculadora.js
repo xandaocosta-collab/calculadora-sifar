@@ -126,33 +126,39 @@ class CalculadoraPassivo {
         let anoControle = 2020;
         let mesControle = 5;
 
-        // 2. Lógica do Triénio
-        let dataTrienio = new Date(this.dataAdmissao);
-        dataTrienio.setFullYear(dataTrienio.getFullYear() + 3);
-        let anoTrienio = dataTrienio.getFullYear();
-        let mesTrienio = dataTrienio.getMonth() + 1;
-
-        let limiteInferiorTrienio = new Date(2020, 4, 1); // Maio de 2020
-        let limiteSuperiorTrienio = new Date(2021, 11, 31, 23, 59, 59); // Dezembro de 2021
-
+        // 2. Lógica de Início do Extrato (Triênio ou Quinquênio)
         let anoExibicao = 2022;
         let mesExibicao = 1;
+        let dataPrimeiroDireito = null;
+        let limiteInferior = new Date(2020, 4, 1); // Maio de 2020
+        let limiteSuperior = new Date(2021, 11, 31, 23, 59, 59); // Dezembro de 2021
 
-        if (dataTrienio >= limiteInferiorTrienio && dataTrienio <= limiteSuperiorTrienio) {
-            anoExibicao = anoTrienio;
-            mesExibicao = mesTrienio;
+        for (let anos = 1; anos <= 35; anos++) {
+            if (anos % 3 === 0 || anos % 5 === 0) {
+                let dataDireito = new Date(this.dataAdmissao);
+                dataDireito.setFullYear(dataDireito.getFullYear() + anos);
+                
+                if (dataDireito >= limiteInferior && dataDireito <= limiteSuperior) {
+                    if (!dataPrimeiroDireito || dataDireito < dataPrimeiroDireito) {
+                        dataPrimeiroDireito = new Date(dataDireito);
+                    }
+                }
+            }
         }
 
-        let targetAtual = new Date();
-        let anoFim, mesFim;
+        if (dataPrimeiroDireito) {
+            anoExibicao = dataPrimeiroDireito.getFullYear();
+            mesExibicao = dataPrimeiroDireito.getMonth() + 1;
+        }
 
-        // 4. Trava da Saúde/Segurança
+        // 4. Travas Finais por Categoria
+        let anoFim, mesFim;
         if (this.categoria === 'Saúde/Segurança') {
-            anoFim = 2022;
-            mesFim = 3;
+            anoFim = 2021;
+            mesFim = 12;
         } else {
-            anoFim = targetAtual.getFullYear();
-            mesFim = targetAtual.getMonth() + 1;
+            anoFim = 2024;
+            mesFim = 4;
         }
 
         let extratoMensal = [];
